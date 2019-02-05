@@ -23,6 +23,7 @@ import com.weibo.api.motan.util.LoggerUtil;
 import com.weibo.api.motan.util.NetUtils;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * "本地服务优先" 负载均衡
@@ -42,7 +43,6 @@ import java.util.*;
 @SpiMeta(name = "localFirst")
 public class LocalFirstLoadBalance<T> extends AbstractLoadBalance<T> {
     public static final int MAX_REFERER_COUNT = 10;
-    private static Random random = new Random();
 
     public static long ipToLong(final String addr) {
         final String[] addressBytes = addr.split("\\.");
@@ -69,7 +69,7 @@ public class LocalFirstLoadBalance<T> extends AbstractLoadBalance<T> {
 
         List<Referer<T>> localReferers = searchLocalReferer(referers, NetUtils.getLocalAddress().getHostAddress());
 
-        if (localReferers.isEmpty()) {
+        if (!localReferers.isEmpty()) {
             referers = localReferers;
         }
 
@@ -101,13 +101,13 @@ public class LocalFirstLoadBalance<T> extends AbstractLoadBalance<T> {
 
         List<Referer<T>> localReferers = searchLocalReferer(referers, NetUtils.getLocalAddress().getHostAddress());
 
-        if (localReferers.isEmpty()) {
+        if (!localReferers.isEmpty()) {
             Collections.sort(localReferers, new LowActivePriorityComparator<T>());
             refersHolder.addAll(localReferers);
         }
 
         int refererSize = referers.size();
-        int startIndex = random.nextInt(refererSize);
+        int startIndex = ThreadLocalRandom.current().nextInt(refererSize);
         int currentCursor = 0;
         int currentAvailableCursor = 0;
 
@@ -131,8 +131,8 @@ public class LocalFirstLoadBalance<T> extends AbstractLoadBalance<T> {
 
     private List<Referer<T>> searchLocalReferer(List<Referer<T>> referers, String localhost) {
         List<Referer<T>> localReferers = new ArrayList<Referer<T>>();
+        long local = ipToLong(localhost);
         for (Referer<T> referer : referers) {
-            long local = ipToLong(localhost);
             long tmp = ipToLong(referer.getUrl().getHost());
             if (local != 0 && local == tmp) {
                 if (referer.isAvailable()) {

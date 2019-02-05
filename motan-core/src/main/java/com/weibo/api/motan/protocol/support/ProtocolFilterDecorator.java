@@ -1,26 +1,18 @@
 /*
- *  Copyright 2009-2016 Weibo, Inc.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2016 Weibo, Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.weibo.api.motan.protocol.support;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.weibo.api.motan.common.MotanConstants;
 import com.weibo.api.motan.common.URLParamType;
@@ -32,16 +24,17 @@ import com.weibo.api.motan.exception.MotanErrorMsgConstant;
 import com.weibo.api.motan.exception.MotanFrameworkException;
 import com.weibo.api.motan.filter.AccessLogFilter;
 import com.weibo.api.motan.filter.Filter;
-import com.weibo.api.motan.rpc.Exporter;
-import com.weibo.api.motan.rpc.Protocol;
-import com.weibo.api.motan.rpc.Provider;
-import com.weibo.api.motan.rpc.Referer;
-import com.weibo.api.motan.rpc.Request;
-import com.weibo.api.motan.rpc.Response;
-import com.weibo.api.motan.rpc.URL;
+import com.weibo.api.motan.filter.InitializableFilter;
+import com.weibo.api.motan.rpc.*;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * 
+ *
  * Decorate the protocol, to add more features.
  *
  * @author fishermen
@@ -70,6 +63,7 @@ public class ProtocolFilterDecorator implements Protocol {
         return decorateWithFilter(protocol.refer(clz, url, serviceUrl), url);
     }
 
+    @Override
     public void destroy() {
         protocol.destroy();
     }
@@ -79,11 +73,15 @@ public class ProtocolFilterDecorator implements Protocol {
         Referer<T> lastRef = referer;
         for (Filter filter : filters) {
             final Filter f = filter;
+            if (f instanceof InitializableFilter) {
+                ((InitializableFilter) f).init(lastRef);
+            }
             final Referer<T> lf = lastRef;
             lastRef = new Referer<T>() {
                 @Override
                 public Response call(Request request) {
-                    if (!f.getClass().getAnnotation(Activation.class).retry() && request.getRetries() != 0) {
+                    Activation activation = f.getClass().getAnnotation(Activation.class);
+                    if (activation != null && !activation.retry() && request.getRetries() != 0) {
                         return lf.call(request);
                     }
                     return f.filter(lf, request);
@@ -134,7 +132,7 @@ public class ProtocolFilterDecorator implements Protocol {
         return lastRef;
     }
 
-    private <T> Provider<T> decorateWithFilter(Provider<T> provider, URL url) {
+    private <T> Provider<T> decorateWithFilter(final Provider<T> provider, URL url) {
         List<Filter> filters = getFilters(url, MotanConstants.NODE_TYPE_SERVICE);
         if (filters == null || filters.size() == 0) {
             return provider;
@@ -142,6 +140,9 @@ public class ProtocolFilterDecorator implements Protocol {
         Provider<T> lastProvider = provider;
         for (Filter filter : filters) {
             final Filter f = filter;
+            if (f instanceof InitializableFilter) {
+                ((InitializableFilter) f).init(lastProvider);
+            }
             final Provider<T> lp = lastProvider;
             lastProvider = new Provider<T>() {
                 @Override
@@ -165,6 +166,11 @@ public class ProtocolFilterDecorator implements Protocol {
                 }
 
                 @Override
+                public Method lookupMethod(String methodName, String methodDesc) {
+                    return lp.lookupMethod(methodName, methodDesc);
+                }
+
+                @Override
                 public URL getUrl() {
                     return lp.getUrl();
                 }
@@ -178,6 +184,11 @@ public class ProtocolFilterDecorator implements Protocol {
                 public boolean isAvailable() {
                     return lp.isAvailable();
                 }
+
+				@Override
+				public T getImpl() {
+					return provider.getImpl();
+				}
             };
         }
         return lastProvider;
@@ -190,7 +201,7 @@ public class ProtocolFilterDecorator implements Protocol {
 	 * 2）根据filter配置获取新的filters，并和默认的filter列表合并；
 	 * 3）再根据一些其他配置判断是否需要增加其他filter，如根据accessLog进行判断，是否需要增加accesslog
 	 * </pre>
-     * 
+     *
      * @param url
      * @param key
      * @return

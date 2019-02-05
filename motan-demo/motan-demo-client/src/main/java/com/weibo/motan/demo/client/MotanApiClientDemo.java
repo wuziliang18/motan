@@ -32,11 +32,18 @@ public class MotanApiClientDemo {
         // 配置服务的group以及版本号
         motanDemoServiceReferer.setGroup("motan-demo-rpc");
         motanDemoServiceReferer.setVersion("1.0");
-        motanDemoServiceReferer.setRequestTimeout(300);
+        motanDemoServiceReferer.setRequestTimeout(1000);
 
-        // 配置注册中心
+        // 配置注册中心直连调用
         RegistryConfig registry = new RegistryConfig();
-        registry.setRegProtocol("local");
+
+        //use direct registry
+        registry.setRegProtocol("direct");
+        registry.setAddress("127.0.0.1:8002");
+
+        // use ZooKeeper registry
+//        registry.setRegProtocol("zookeeper");
+//        registry.setAddress("127.0.0.1:2181");
         motanDemoServiceReferer.setRegistry(registry);
 
         // 配置RPC协议
@@ -44,14 +51,12 @@ public class MotanApiClientDemo {
         protocol.setId("motan");
         protocol.setName("motan");
         motanDemoServiceReferer.setProtocol(protocol);
-        motanDemoServiceReferer.setDirectUrl("localhost:8002");
+        // motanDemoServiceReferer.setDirectUrl("localhost:8002");  // 注册中心直连调用需添加此配置
 
         // 使用服务
         MotanDemoService service = motanDemoServiceReferer.getRef();
         System.out.println(service.hello("motan"));
 
         System.exit(0);
-
     }
-
 }

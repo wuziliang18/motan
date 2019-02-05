@@ -25,27 +25,22 @@ import com.weibo.api.motan.util.LoggerUtil;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkException;
 
-/**
- * registry factory.
- *
- * @author fishermen
- * @version V1.0 created at: 2013-5-28
- */
 @SpiMeta(name = "zookeeper")
 public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
-
     @Override
     protected Registry createRegistry(URL registryUrl) {
         try {
-            int timeout = registryUrl.getIntParameter(URLParamType.requestTimeout.getName(), URLParamType.requestTimeout.getIntValue());
-            int sessionTimeout =
-                    registryUrl.getIntParameter(URLParamType.registrySessionTimeout.getName(),
-                            URLParamType.registrySessionTimeout.getIntValue());
-            ZkClient zkClient = new ZkClient(registryUrl.getParameter("address"), sessionTimeout, timeout);
+            int timeout = registryUrl.getIntParameter(URLParamType.connectTimeout.getName(), URLParamType.connectTimeout.getIntValue());
+            int sessionTimeout = registryUrl.getIntParameter(URLParamType.registrySessionTimeout.getName(), URLParamType.registrySessionTimeout.getIntValue());
+            ZkClient zkClient = createInnerZkClient(registryUrl.getParameter("address"), sessionTimeout, timeout);
             return new ZookeeperRegistry(registryUrl, zkClient);
         } catch (ZkException e) {
             LoggerUtil.error("[ZookeeperRegistry] fail to connect zookeeper, cause: " + e.getMessage());
             throw e;
         }
+    }
+
+    protected ZkClient createInnerZkClient(String zkServers, int sessionTimeout, int connectionTimeout) {
+        return new ZkClient(zkServers, sessionTimeout, connectionTimeout);
     }
 }

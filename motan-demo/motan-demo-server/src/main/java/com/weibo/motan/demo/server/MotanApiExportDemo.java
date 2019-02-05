@@ -27,19 +27,26 @@ public class MotanApiExportDemo {
 
     public static void main(String[] args) throws InterruptedException {
         ServiceConfig<MotanDemoService> motanDemoService = new ServiceConfig<MotanDemoService>();
-        
-        //设置接口及实现类
-        motanDemoService.setInterface(MotanDemoService.class);  
+
+        // 设置接口及实现类
+        motanDemoService.setInterface(MotanDemoService.class);
         motanDemoService.setRef(new MotanDemoServiceImpl());
 
         // 配置服务的group以及版本号
         motanDemoService.setGroup("motan-demo-rpc");
         motanDemoService.setVersion("1.0");
 
-        // 配置注册中心
+        // 配置注册中心直连调用
         RegistryConfig registry = new RegistryConfig();
+
+        //use local registry
         registry.setRegProtocol("local");
-        registry.setCheck("false"); //不检查是否注册成功
+
+        // use ZooKeeper registry
+//        registry.setRegProtocol("zookeeper");
+//        registry.setAddress("127.0.0.1:2181");
+
+        // registry.setCheck("false"); //是否检查是否注册成功
         motanDemoService.setRegistry(registry);
 
         // 配置RPC协议

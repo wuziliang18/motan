@@ -16,14 +16,14 @@
 
 package com.weibo.api.motan.cluster.loadbalance;
 
-import java.util.List;
-
 import com.weibo.api.motan.cluster.LoadBalance;
 import com.weibo.api.motan.exception.MotanServiceException;
 import com.weibo.api.motan.rpc.Referer;
 import com.weibo.api.motan.rpc.Request;
 import com.weibo.api.motan.util.LoggerUtil;
 import com.weibo.api.motan.util.MotanFrameworkUtil;
+
+import java.util.List;
 
 /**
  * 
@@ -34,6 +34,7 @@ import com.weibo.api.motan.util.MotanFrameworkUtil;
  */
 
 public abstract class AbstractLoadBalance<T> implements LoadBalance<T> {
+    public static final int MAX_REFERER_COUNT = 10;
 
     private List<Referer<T>> referers;
 
@@ -46,7 +47,9 @@ public abstract class AbstractLoadBalance<T> implements LoadBalance<T> {
     @Override
     public Referer<T> select(Request request) {
         List<Referer<T>> referers = this.referers;
-
+        if (referers == null) {
+            throw new MotanServiceException(this.getClass().getSimpleName() + " No available referers for call request:" + request);
+        }
         Referer<T> ref = null;
         if (referers.size() > 1) {
             ref = doSelect(request);

@@ -11,6 +11,13 @@ public class ConsulConstants {
 	 */
 	public static final String CONSUL_TAG_MOTAN_PROTOCOL = "protocol_";
 
+	public static final String CONSUL_TAG_MOTAN_URL = "URL_";
+
+	/**
+	 * motan rpc 在consul中存储command的目录
+	 */
+	public static final String CONSUL_MOTAN_COMMAND = "motan/command/";
+
 	/**
 	 * 默认consul agent的ip
 	 */
@@ -61,7 +68,7 @@ public class ConsulConstants {
 	/**
 	 * consul block 查询时 block的最长时间,单位，分钟
 	 */
-	public static int CONSUL_BLOCK_TIME_MINUTES = 10;
+	public static int CONSUL_BLOCK_TIME_MINUTES = 9;
 	
 	/**
 	 * consul block 查询时 block的最长时间,单位，秒
