@@ -221,7 +221,7 @@ public abstract class AbstractRegistry implements Registry {
 
     /**
      * 移除不必提交到注册中心的参数。这些参数不需要被client端感知。
-     *
+     * 看上去是新老版本兼容的问题
      * @param url
      */
     private URL removeUnnecessaryParmas(URL url) {

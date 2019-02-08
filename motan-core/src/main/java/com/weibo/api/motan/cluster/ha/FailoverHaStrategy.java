@@ -34,13 +34,15 @@ import java.util.List;
 
 /**
  * Failover ha strategy.
- *
+ * 带有重试的
  * @author fishermen
  * @version V1.0 created at: 2013-5-21
  */
 @SpiMeta(name = "failover")
 public class FailoverHaStrategy<T> extends AbstractHaStrategy<T> {
-
+	/**
+	 * 是为了初始化一个空的list 应该是为了减少list的对象生成 
+	 */
     protected ThreadLocal<List<Referer<T>>> referersHolder = new ThreadLocal<List<Referer<T>>>() {
         @Override
         protected java.util.List<com.weibo.api.motan.rpc.Referer<T>> initialValue() {

@@ -45,7 +45,11 @@ import java.util.Map;
 
 import static com.weibo.api.motan.common.MotanConstants.*;
 
-
+/**
+ * 编解码器v2版本 使用了bytebuffer
+ * @author ziliang.wu
+ *
+ */
 @SpiMeta(name = "motan2")
 public class MotanV2Codec extends AbstractCodec {
 

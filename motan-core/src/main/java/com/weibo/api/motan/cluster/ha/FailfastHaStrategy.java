@@ -24,17 +24,17 @@ import com.weibo.api.motan.rpc.Response;
 
 /**
  * 
- * Fail fast ha strategy.
- *
+ * Fail fast ha strategy. 不处理失败情况
+ * 
  * @author fishermen
  * @version V1.0 created at: 2013-5-22
  */
 @SpiMeta(name = "failfast")
 public class FailfastHaStrategy<T> extends AbstractHaStrategy<T> {
 
-    @Override
-    public Response call(Request request, LoadBalance<T> loadBalance) {
-        Referer<T> refer = loadBalance.select(request);
-        return refer.call(request);
-    }
+	@Override
+	public Response call(Request request, LoadBalance<T> loadBalance) {
+		Referer<T> refer = loadBalance.select(request);
+		return refer.call(request);
+	}
 }

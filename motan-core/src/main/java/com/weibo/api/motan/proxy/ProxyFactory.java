@@ -28,7 +28,12 @@ import java.util.List;
  */
 @Spi
 public interface ProxyFactory {
-
+	/**
+	 * clusters 是list应该是为了支持多协议
+	 * @param clz
+	 * @param clusters
+	 * @return
+	 */
     <T> T getProxy(Class<T> clz, List<Cluster<T>> clusters);
 
 }

@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Cluster spi.
- *
+ * wuzl感觉代码有问题 刷新的时候加锁 获取的时候没有加锁 因为使用AtomicBoolean?
  * @author fishermen
  * @version V1.0 created at: 2013-5-21
  */
@@ -112,7 +112,9 @@ public class ClusterSpi<T> implements Cluster<T> {
                 "referers=" + referers + "}";
 
     }
-
+    /**
+     * wuzl?只需要set的时候加锁吗? 这样有意义吗 似乎是用来保证串行的
+     */
     @Override
     public synchronized void onRefresh(List<Referer<T>> referers) {
         if (CollectionUtil.isEmpty(referers)) {

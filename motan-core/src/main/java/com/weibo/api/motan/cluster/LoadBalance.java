@@ -36,7 +36,11 @@ public interface LoadBalance<T> {
     void onRefresh(List<Referer<T>> referers);
 
     Referer<T> select(Request request);
-
+    /**
+     * 把可用引用放到refersHolder中
+     * @param request
+     * @param refersHolder
+     */
     void selectToHolder(Request request, List<Referer<T>> refersHolder);
 
     void setWeightString(String weightString);

@@ -16,16 +16,17 @@
 
 package com.weibo.api.motan.proxy.spi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.weibo.api.motan.cluster.Cluster;
 import com.weibo.api.motan.core.extension.SpiMeta;
 import com.weibo.api.motan.proxy.ProxyFactory;
 import com.weibo.api.motan.proxy.RefererCommonHandler;
 
-import java.util.List;
-
 /**
  * common proxy
- *
+ * 
  * @author sunnight
  */
 @SpiMeta(name = "common")
@@ -34,6 +35,11 @@ public class CommonProxyFactory implements ProxyFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getProxy(Class<T> clz, List<Cluster<T>> clusters) {
+    	//此处不会出现问题吗  除非调用方使用RefererCommonHandler
         return (T) new RefererCommonHandler(clusters.get(0).getUrl().getPath(), clusters);
     }
+    public static void main(String[] args) {
+    	ProxyFactory  factory=new CommonProxyFactory().getProxy(com.weibo.api.motan.proxy.ProxyFactory.class, new ArrayList());
+    	System.out.println(factory.getClass());
+	}
 }

@@ -37,7 +37,9 @@ public abstract class AbstractLoadBalance<T> implements LoadBalance<T> {
     public static final int MAX_REFERER_COUNT = 10;
 
     private List<Referer<T>> referers;
-
+    /**
+     * 不加锁? 难道是调用方加锁
+     */
     @Override
     public void onRefresh(List<Referer<T>> referers) {
         // 只能引用替换，不能进行referers update。

@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Notify cluster the referers have changed.
- *
+ * 对类进行通知
  * @author fishermen
  * @version V1.0 created at: 2013-5-31
  */
@@ -69,7 +69,7 @@ public class ClusterSupport<T> implements NotifyListener {
 
     public void init() {
         long start = System.currentTimeMillis();
-        prepareCluster();
+        prepareCluster();//初始化集群
 
         URL subUrl = toSubscribeUrl(url);
         for (URL ru : registryUrls) {
@@ -144,6 +144,7 @@ public class ClusterSupport<T> implements NotifyListener {
      * 2 notify通知都是全量通知，在设入新的referer后，cluster需要把不再使用的referer进行回收，避免资源泄漏;
      * 3 如果该registry对应的referer数量为0，而没有其他可用的referers，那就忽略该次通知；
      * 4 此处对protoco进行decorator处理，当前为增加filters
+     * 实际通知的是cluster
      * </pre>
      */
     @Override
@@ -304,7 +305,11 @@ public class ClusterSupport<T> implements NotifyListener {
         cluster.setHaStrategy(ha);
         cluster.setUrl(url);
     }
-
+    /**
+     * 解析直连的地址
+     * @param directUrlStr
+     * @return
+     */
     private List<URL> parseDirectUrls(String directUrlStr) {
         String[] durlArr = MotanConstants.COMMA_SPLIT_PATTERN.split(directUrlStr);
         List<URL> directUrls = new ArrayList<URL>();

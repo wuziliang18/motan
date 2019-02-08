@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 创建时间：2013-5-24
  */
 public abstract class AbstractCodec implements Codec {
+	//多协议共享的
     protected static ConcurrentHashMap<Integer, String> serializations;
 
 

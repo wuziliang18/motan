@@ -39,6 +39,7 @@ import java.util.Map;
 
 /**
  * @author maijunsheng
+ * 使用java基本的操作 
  * @version 创建时间：2013-5-22
  *
  */

@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  */
 public abstract class AbstractProtocol implements Protocol {
+	//协议是单例的 所有export肯定是一直存在的
     protected ConcurrentHashMap<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
     public Map<String, Exporter<?>> getExporterMap() {

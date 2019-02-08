@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
+ * 加入一个关闭的任务
  * @author zhanran
  * Date: 2017/5/24
  * add a shutDownHook to close some global resources
@@ -71,7 +72,11 @@ public class ShutDownHook extends Thread {
         LoggerUtil.info("Success to close all the resource!");
         resourceList.clear();
     }
-
+    /**
+     * 注释 包装了Closable 主要是为了加入一个优先级排序
+     * @author ziliang.wu
+     *
+     */
     private static class closableObject implements Comparable<closableObject> {
         Closable closable;
         int priority;

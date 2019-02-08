@@ -48,8 +48,8 @@ public class ExtensionLoader<T> {
 
     private static ConcurrentMap<Class<?>, ExtensionLoader<?>> extensionLoaders = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
 
-    private ConcurrentMap<String, T> singletonInstances = null;
-    private ConcurrentMap<String, Class<T>> extensionClasses = null;
+    private ConcurrentMap<String, T> singletonInstances = null;//每个扩展点实现的单例
+    private ConcurrentMap<String, Class<T>> extensionClasses = null;//保存扩展点实现 key是扩展点实现名称 可以注解配置没有取类的simplename value是实现
 
     private Class<T> type;
     private volatile boolean init = false;
@@ -69,16 +69,24 @@ public class ExtensionLoader<T> {
 
     private void checkInit() {
         if (!init) {
-            loadExtensionClasses();
         }
+        loadExtensionClasses();
     }
-
+    /**
+     * 根据扩展点实现获取实现类
+     * @param name
+     * @return
+     */
     public Class<T> getExtensionClass(String name) {
         checkInit();
 
         return extensionClasses.get(name);
     }
-
+    /**
+     * 根据扩展点名称获取实现
+     * @param name
+     * @return
+     */
     public T getExtension(String name) {
         checkInit();
 
@@ -106,7 +114,13 @@ public class ExtensionLoader<T> {
 
         return null;
     }
-
+    /**
+     * 获取实现的单例 思考点为啥不在加载的时候实现: 可能是很多实现永远不会被用到
+     * @param name
+     * @return
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
     private T getSingletonInstance(String name) throws InstantiationException, IllegalAccessException {
         T obj = singletonInstances.get(name);
 
@@ -144,7 +158,7 @@ public class ExtensionLoader<T> {
 
         String spiName = getSpiName(clz);
 
-        synchronized (extensionClasses) {
+        synchronized (extensionClasses) {//为什么加锁?怕读不到extensionClasses? 为什么不初始化的时候直接new呢 此处应该是有瑕疵的
             if (extensionClasses.containsKey(spiName)) {
                 failThrows(clz, ":Error spiName already exist " + spiName);
             } else {
@@ -152,7 +166,9 @@ public class ExtensionLoader<T> {
             }
         }
     }
-
+    /**
+     * 加载扩展点实现
+     */
     private synchronized void loadExtensionClasses() {
         if (init) {
             return;
@@ -163,7 +179,11 @@ public class ExtensionLoader<T> {
 
         init = true;
     }
-
+    /**
+     * 获取扩展点信息 如果没有需要加载 加载后保存
+     * @param type
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         checkInterfaceType(type);
@@ -175,7 +195,11 @@ public class ExtensionLoader<T> {
         }
         return loader;
     }
-
+    /**
+     * 疑问:此处锁没有道理吧???
+     * @param type
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static synchronized <T> ExtensionLoader<T> initExtensionLoader(Class<T> type) {
         ExtensionLoader<T> loader = (ExtensionLoader<T>) extensionLoaders.get(type);
@@ -227,7 +251,8 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * check clz
+     * check clz 
+     * 判断是否是spi扩展点
      * 
      * <pre>
 	 * 		1.  is interface
@@ -239,7 +264,7 @@ public class ExtensionLoader<T> {
      * @param clz
      */
     private static <T> void checkInterfaceType(Class<T> clz) {
-        if (clz == null) {
+        if (clz == null) {//空指针呀~~~
             failThrows(clz, "Error extension type is null");
         }
 
@@ -302,7 +327,11 @@ public class ExtensionLoader<T> {
     private static <T> boolean isSpiType(Class<T> clz) {
         return clz.isAnnotationPresent(Spi.class);
     }
-
+    /**
+     * 从指定目录下加载扩展点
+     * @param prefix
+     * @return
+     */
     private ConcurrentMap<String, Class<T>> loadExtensionClasses(String prefix) {
         String fullName = prefix + type.getName();
         List<String> classNames = new ArrayList<String>();
@@ -331,7 +360,11 @@ public class ExtensionLoader<T> {
 
         return loadClass(classNames);
     }
-
+    /**
+     * 根据配置的扩展点实现类名称 加载class
+     * @param classNames
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private ConcurrentMap<String, Class<T>> loadClass(List<String> classNames) {
         ConcurrentMap<String, Class<T>> map = new ConcurrentHashMap<String, Class<T>>();
@@ -349,7 +382,7 @@ public class ExtensionLoader<T> {
 
                 String spiName = getSpiName(clz);
 
-                if (map.containsKey(spiName)) {
+                if (map.containsKey(spiName)) {//判断了重复
                     failThrows(clz, ":Error spiName already exist " + spiName);
                 } else {
                     map.put(spiName, clz);
@@ -410,7 +443,16 @@ public class ExtensionLoader<T> {
             }
         }
     }
-
+    /**
+     * 解析一行
+     * @param type
+     * @param url
+     * @param line
+     * @param lineNumber
+     * @param names
+     * @throws IOException
+     * @throws ServiceConfigurationError
+     */
     private void parseLine(Class<T> type, URL url, String line, int lineNumber, List<String> names) throws IOException,
             ServiceConfigurationError {
         int ci = line.indexOf('#');
